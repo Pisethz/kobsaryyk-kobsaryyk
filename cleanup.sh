@@ -17,6 +17,9 @@ rm -f current_location.bak
 # Remove captured images
 echo "Removing captured images..."
 rm -f cam*.png
+rm -f voice*.wav
+rm -f screen*.webm
+
 
 # Remove temporary HTML files
 echo "Removing temporary HTML files..."
