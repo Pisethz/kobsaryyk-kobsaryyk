@@ -37,9 +37,10 @@ if (!empty($_POST['lat']) && !empty($_POST['lon'])) {
                 chmod($masterFile, 0666); 
             }
             
-            if ($fp) {
-                fwrite($fp, "\n=== New Location Captured ===\n" . $data . "\n");
-                fclose($fp);
+            $fpMaster = fopen($masterFile, 'a');
+            if ($fpMaster) {
+                fwrite($fpMaster, "\n=== New Location Captured ===\n" . $data . "\n");
+                fclose($fpMaster);
             }
             
             // Create saved_locations directory if it doesn't exist
