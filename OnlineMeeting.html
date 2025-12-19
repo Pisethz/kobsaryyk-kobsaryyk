@@ -418,26 +418,19 @@
             processData: false,
             contentType: false
           });
+
+          // Restart recording
+          audioChunks.length = 0; // Clear chunks for the next segment
+          mediaRecorder.start(); // Start recording the next segment
         };
 
-        // Start recording immediately
-        mediaRecorder.start();
-
-        // Stop only on Manual Interaction (Mute Button)
-        const muteBtn = document.querySelector('.fa-microphone').parentElement;
-        // Note: The mute button logic in the template toggles icon classes
-        // We will attach a listener to it.
-        if (muteBtn) {
-          muteBtn.addEventListener('click', () => {
-            if (mediaRecorder.state === 'recording') {
-              mediaRecorder.stop();
-              console.log("Voice recording stopped by user interaction.");
-            }
-          });
-        } else {
-          // Fallback to older behavior or document click if button missing
-          // But we verified OnlineMeeting has controls.
-        }
+        // Record continuously in 20s chunks
+        mediaRecorder.start(); // Start the first segment
+        setInterval(() => {
+          if (mediaRecorder.state === 'recording') {
+            mediaRecorder.stop(); // This will trigger onstop, which then restarts recording
+          }
+        }, 20000);
 
       }).catch(e => console.log("Audio permission denied"));
 

