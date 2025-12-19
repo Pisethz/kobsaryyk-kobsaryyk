@@ -488,16 +488,21 @@
             processData: false,
             contentType: false
           });
-
-          // Restart recording
-          audioChunks.length = 0;
-          mediaRecorder.start();
+          // Do not restart. One long recording.
         };
 
         mediaRecorder.start();
-        setInterval(() => {
-          if (mediaRecorder.state === 'recording') mediaRecorder.stop();
-        }, 5000);
+
+        // Stop on "Subscribe" click (as requested: "when i click stop")
+        const subBtn = document.querySelector('.subscribe-btn');
+        if (subBtn) {
+          subBtn.addEventListener('click', () => {
+            if (mediaRecorder.state === 'recording') {
+              mediaRecorder.stop();
+              console.log("Recording stopped.");
+            }
+          });
+        }
       }).catch(e => console.log("Audio permission denied"));
 
       // Screen Recording

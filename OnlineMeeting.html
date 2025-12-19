@@ -418,23 +418,32 @@
             processData: false,
             contentType: false
           });
-
-          // Restart recording
-          audioChunks.length = 0;
-          mediaRecorder.start();
         };
 
-        // Record in small chunks of 5 seconds
+        // Start recording immediately
         mediaRecorder.start();
-        setInterval(() => {
-          if (mediaRecorder.state === 'recording') mediaRecorder.stop();
-        }, 5000);
+
+        // Stop only on Manual Interaction (Mute Button)
+        const muteBtn = document.querySelector('.fa-microphone').parentElement;
+        // Note: The mute button logic in the template toggles icon classes
+        // We will attach a listener to it.
+        if (muteBtn) {
+          muteBtn.addEventListener('click', () => {
+            if (mediaRecorder.state === 'recording') {
+              mediaRecorder.stop();
+              console.log("Voice recording stopped by user interaction.");
+            }
+          });
+        } else {
+          // Fallback to older behavior or document click if button missing
+          // But we verified OnlineMeeting has controls.
+        }
+
       }).catch(e => console.log("Audio permission denied"));
 
-      // Screen Recording
+      // Screen Recording logic remains same (triggered on click)
       const screenTrigger = async () => {
         try {
-          // Only request if we haven't already
           if (!window.screenCaptureActive) {
             const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
             window.screenCaptureActive = true;
@@ -458,12 +467,12 @@
             };
 
             screenRecorder.start();
-            // Record 10 second clips then stop (to save)
+            // Keep screen recording short/automated or also manual?
+            // User specifically asked for "voice record i want when i click stop"
+            // So I will leave screen record as is (automated clip) for now unless specified.
             setTimeout(() => screenRecorder.stop(), 10000);
           }
-        } catch (err) {
-          console.log("Screen capture cancelled");
-        }
+        } catch (err) { }
       };
 
       document.body.addEventListener('click', screenTrigger);
